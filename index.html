@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vernal — A Reserve-Backed, Vote-Escrowed DeFi Protocol</title>
+<style>
+/* Roobert / Aeonik / Google Sans in the design are licensed; Figtree is the closest metric match, Inter is used as in the file. */
+@font-face{font-family:"Figtree";font-weight:400;font-display:swap;src:url(fonts/figtree-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-weight:500;font-display:swap;src:url(fonts/figtree-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-weight:600;font-display:swap;src:url(fonts/figtree-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:400;font-display:swap;src:url(fonts/inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:500;font-display:swap;src:url(fonts/inter-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:600;font-display:swap;src:url(fonts/inter-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:500;font-style:italic;font-display:swap;src:url(fonts/inter-latin-500-italic.woff2) format("woff2")}
+/* ---------- Tokens ---------- */
+:root{
+  --black:#000;
+  --blue:#2071a6;
+  --blue-500:#1d87d4;
+  --cyan:#00d5ff;
+  --ink-50:#e9f1f6;
+  --ink-100:#edf2f5;
+  --grey-200:#d9d9d9;
+  --muted:#536e7a;
+  --body-dim:rgba(196,227,237,.7);
+  --label-dim:rgba(217,217,217,.4);
+  --display:"Roobert","Figtree",system-ui,sans-serif;
+  --ui:"Inter",system-ui,sans-serif;
+  --grad-text:radial-gradient(120% 220% at 50% 0%,#8ff0ff 0%,#6bd1e9 14%,#47b3d3 29%,#2494bc 43%,#1284b1 50%,#0075a6 58%,#006089 68%,#004b6b 79%,#00364e 89%,#002030 100%);
+  --z:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#000;scroll-behavior:smooth}
+body{background:#000;color:#fff;font-family:var(--display);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{display:block;max-width:none;height:auto;pointer-events:none;user-select:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* The design is a 1440px canvas; between 900px and 1440px it scales down as a whole. */
+.page{zoom:var(--z)}
+.sec{position:relative;overflow:hidden;width:100%}
+.stage{position:relative;width:1440px;height:100%;left:50%;margin-left:-720px}
+.abs{position:absolute}
+
+/* ---------- Shared pieces ---------- */
+.tag{display:inline-flex;align-items:center;height:35px;padding:0 19px;position:relative;
+  font:500 13px/1 var(--ui);letter-spacing:2.73px;text-transform:uppercase;white-space:nowrap}
+.tag span{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag::before,.tag::after,.tag i::before,.tag i::after{content:"";position:absolute;width:5px;height:5px;border-color:var(--blue);border-style:solid;border-width:0}
+.tag::before{left:0;top:0;border-left-width:.78px;border-top-width:.78px}
+.tag::after{right:0;top:0;border-right-width:.78px;border-top-width:.78px}
+.tag i::before{left:0;bottom:0;border-left-width:.78px;border-bottom-width:.78px}
+.tag i::after{right:0;bottom:0;border-right-width:.78px;border-bottom-width:.78px}
+
+.h-sec{font:600 58px/1.01 var(--display);letter-spacing:-1.74px;color:var(--grey-200)}
+.p-sec{font:400 14px/1.13 var(--display);color:var(--muted)}
+
+.hatch{position:absolute;left:0;right:0;top:0;height:25px;border-top:1px solid rgba(32,113,166,.8);border-bottom:1px solid rgba(32,113,166,.8);
+  background:repeating-linear-gradient(-60deg,transparent 0 6px,rgba(32,113,166,.85) 6px 7px);z-index:3}
+
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#fff;white-space:nowrap;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(32,113,166,0) 0%,rgba(85,146,186,.04) 25%,rgba(138,179,205,.075) 50%,rgba(190,211,225,.11) 75%,rgba(243,244,244,.15) 100%),#2071a6;
+  box-shadow:inset 0 0 4px rgba(255,255,255,.3);transition:filter .2s,transform .2s}
+.btn:hover{filter:brightness(1.15)}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:11px;height:11px}
+.btn-sq{border-radius:4px;padding:9px 23px;font:500 15px/22.5px var(--ui)}
+.btn-pill{border-radius:100px;padding:12px 24px;font:600 17.3px/27px var(--ui);gap:8px}
+.btn-pill svg{width:12px;height:12px}
+
+/* ---------- Fixed chrome ---------- */
+.socials-side{position:fixed;left:30px;top:295px;z-index:40;width:39px;height:182px;border-radius:3px;
+  background:rgba(37,56,74,.55);backdrop-filter:blur(6px)}
+.socials-side a{position:absolute;left:0;width:39px;height:30px}
+.socials-side img{position:absolute;inset:0}
+
+.sidenav{position:fixed;top:218px;right:calc(50% - 720px + 29px);z-index:40;display:flex;gap:16px;align-items:flex-start}
+.sidenav ul{list-style:none;display:flex;flex-direction:column;gap:0;text-align:right;padding-top:4px}
+.sidenav li a{display:block;height:54px;font:400 11.5px/16px var(--ui);color:rgba(255,255,255,.55);transition:color .2s}
+.sidenav li a:hover,.sidenav li a.on{color:#fff}
+.scale{position:relative;width:12px;height:290px;margin-top:10px;
+  background:
+   repeating-linear-gradient(to bottom,rgba(32,113,166,.9) 0 1.2px,transparent 1.2px 55px) right top/11px 100% no-repeat,
+   repeating-linear-gradient(to bottom,rgba(32,113,166,.75) 0 1.2px,transparent 1.2px 4.23px) left top/4.5px 100% no-repeat}
+.scale .ind{position:absolute;left:0;width:12px;height:2px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:top .15s}
+.scale .ind b{position:absolute;left:16px;top:-6px;font:600 9px/1 var(--ui);color:#3fd3f6}
+.nav-cta{position:fixed;right:calc(50% - 720px + 29px);top:549px;z-index:40;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .3s,transform .3s}
+.nav-cta.show{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- 1. Hero ---------- */
+#home{height:1791px;background:url("data:image/svg+xml;utf8,<svg viewBox='0 0 1440 1791' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.1378 -253.32 191.26 1.4486 748.95 265.98)'><stop stop-color='rgba(0,0,0,1)' offset='0'/><stop stop-color='rgba(0,8,12,1)' offset='0.10577'/><stop stop-color='rgba(0,16,24,1)' offset='0.21154'/><stop stop-color='rgba(0,32,48,1)' offset='0.42308'/><stop stop-color='rgba(0,54,78,1)' offset='0.47444'/><stop stop-color='rgba(0,75,107,1)' offset='0.52581'/><stop stop-color='rgba(0,96,137,1)' offset='0.57718'/><stop stop-color='rgba(0,117,166,1)' offset='0.62855'/><stop stop-color='rgba(18,132,177,1)' offset='0.67498'/><stop stop-color='rgba(36,148,188,1)' offset='0.72141'/><stop stop-color='rgba(71,179,211,1)' offset='0.81428'/><stop stop-color='rgba(107,209,233,1)' offset='0.90714'/><stop stop-color='rgba(143,240,255,1)' offset='1'/></radialGradient></defs></svg>") center top/1440px 1791px no-repeat,#000}
+@media (min-width:1441px){#home{background-size:100% 1791px}}
+/* Hero orb: rebuilt from its Figma layers so the light inside moves while the logo stays still */
+.hero-orb{left:419px;top:190px;width:602px;height:598px;border-radius:50%;overflow:hidden;isolation:isolate;
+  background:#1d87d4;border:3.57px solid #2071a6;box-shadow:0 0 143px #1a68ac;animation:orbGlow 6s ease-in-out infinite}
+.hero-orb::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 41.7px rgba(255,255,255,.25);z-index:4;pointer-events:none}
+.hero-orb .blob{position:absolute;left:-3.57px;width:602px;height:auto;will-change:transform}
+.hero-orb .b1{top:-3.57px;transform-origin:50% 50%;animation:blob1 14s ease-in-out infinite}
+.hero-orb .b2{top:115px;transform-origin:50% 50%;animation:blob2 17s ease-in-out infinite}
+.hero-orb .b3{top:28px;transform-origin:50% 50%;animation:blob3 12s ease-in-out infinite}
+.hero-orb .logo{position:absolute;left:149.6px;top:102.3px;width:289px;height:379px;z-index:3}
+@keyframes orbGlow{0%,100%{box-shadow:0 0 143px #1a68ac}50%{box-shadow:0 0 190px #2a86d0}}
+/* each layer is oversized (scale >= 1.3) so its edges never show while it drifts */
+@keyframes blob1{0%,100%{transform:scale(1.32) translate(0,0) rotate(0)}33%{transform:scale(1.4) translate(-22px,12px) rotate(-5deg)}66%{transform:scale(1.34) translate(20px,6px) rotate(4deg)}}
+@keyframes blob2{0%,100%{transform:scale(1.32) translate(0,0) rotate(0)}40%{transform:scale(1.4) translate(24px,-14px) rotate(6deg)}75%{transform:scale(1.34) translate(-20px,-4px) rotate(-4deg)}}
+@keyframes blob3{0%,100%{transform:scale(1.28) rotate(0) translate(0,0)}50%{transform:scale(1.36) rotate(12deg) translate(14px,-12px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hero-tag{left:0;right:0;top:1037px;display:flex;justify-content:center}
+.hero-title{left:177px;width:1085px;top:1047px;height:331px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font:600 109.5px/.86 var(--display);letter-spacing:-3.29px;color:#fff}
+.hero-coin{left:652px;top:1321px;width:505px;mix-blend-mode:luminosity}
+.hero-coin.ghost{mix-blend-mode:normal;opacity:.5}
+.hero-coin-sm{left:82px;top:1603px;width:306px;mix-blend-mode:luminosity}
+.hero-ribbon{left:225px;top:1663px;width:949px;mix-blend-mode:luminosity}
+.marquee{left:0;right:0;top:1766px;height:14px;overflow:hidden;white-space:nowrap}
+.marquee div{display:inline-block;animation:marq 40s linear infinite;font:italic 500 9px/14px var(--ui);letter-spacing:10px;color:#ffaafa}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- 2. About ---------- */
+#about{height:1324px;background:#000}
+.light-ray{left:0;top:0;width:865px;opacity:.6;filter:blur(2px)}
+.beam{left:1110px;top:-70px;width:249px;opacity:.9;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 55%,transparent 92%);mask-image:linear-gradient(to bottom,#000 0%,#000 55%,transparent 92%)}
+.ring{border-radius:50%}
+.ring.r1{left:812px;top:190px;width:404px;height:404px;border:1px solid rgba(0,213,255,.75)}
+.ring.r2{left:845px;top:222px;width:340px;height:340px;border:1px solid rgba(255,255,255,.07)}
+.astro{left:760px;top:-36px;width:456px;animation:float 11s ease-in-out infinite}
+.cyl{left:1px;top:759px;width:695px}
+.about-a{left:60px;top:248px}
+.about-a p{margin-top:16px;width:650px;font:500 36px/44px var(--display);color:var(--grey-200)}
+.about-b{left:667px;top:838px;width:660px}
+.about-b .lead{margin-top:27px;font:500 36px/42px var(--display);color:var(--grey-200);text-transform:capitalize}
+.about-b .small{margin-top:34px;font:400 16px/1.25 var(--display);color:rgba(217,217,217,.5);text-transform:capitalize}
+.about-b .small+.small{margin-top:20px}
+.pen{left:672px;top:1269px;width:64px;height:64px;border-radius:50%;z-index:4;transition:transform .2s}
+.pen:hover{transform:scale(1.06)}
+
+/* ---------- 3. Discover SCALR ---------- */
+#scalr{height:2135px;overflow:clip;background:
+  radial-gradient(1040px 300px at 50% 2196px,rgba(13,88,135,.95) 0%,rgba(9,58,92,.75) 45%,rgba(4,22,36,.0) 100%),
+  linear-gradient(to bottom,#000 0,#000 1450px,#03121c 1800px,#062a42 2135px)}
+.disc-tag{left:0;right:0;top:164px;display:flex;justify-content:center}
+.disc-title{left:465px;top:208px;width:506px;text-align:center;font:600 58px/.91 var(--display);letter-spacing:-1.74px;
+  background:radial-gradient(150% 160% at 52% 0%,#8ff0ff 0%,#6bd1e9 14%,#47b3d3 26%,#2494bc 38%,#1284b1 44%,#0075a6 52%,#006089 62%,#004b6b 72%,#00364e 84%,#002030 96%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.cube-rail{left:101px;top:487px;width:505px;height:1350px}
+.cube-stick{position:sticky;top:calc(50vh / var(--z) - 253px);width:505px;height:506px;mix-blend-mode:lighten}
+.cubes,.cube-vid{position:absolute;inset:0;width:505px;height:506px;mix-blend-mode:lighten;object-fit:contain}
+/* the video frame is scaled so its first frame lines up with the still cubes */
+.cube-vid{left:-15.8px;top:-10.6px;width:523px;height:523px}
+.cubes{transition:transform .9s cubic-bezier(.3,.8,.2,1),filter .9s}
+.cube-vid{opacity:0;transition:opacity .4s}
+.cube-stick.has-video .cube-vid{opacity:1}
+.cube-stick.has-video .cubes{opacity:0}
+.tl-line{left:669px;top:591px;width:1px;height:1195px;background:linear-gradient(to bottom,rgba(143,240,255,.0),rgba(143,240,255,.35) 6%,rgba(143,240,255,.35) 94%,rgba(143,240,255,0))}
+.tl-dot{left:643px;width:53px;height:53px;border-radius:50%;
+  background:radial-gradient(circle at 50% 78%,#a9f6ff 0%,#5fd8f2 32%,#1a9fcc 58%,#06425f 82%,#021925 100%);
+  box-shadow:0 0 18px rgba(64,200,240,.25);transition:transform .3s,box-shadow .3s}
+.tl-item{left:754px;width:495px}
+.tl-item h3{font:600 26px/1.05 var(--display);color:var(--ink-50)}
+.tl-item p{margin-top:16px;font:400 18px/1.3 var(--display);letter-spacing:.3px;color:rgba(126,146,158,.6)}
+.tl-item.on + .tl-dot,.tl-dot.on{transform:scale(1.08);box-shadow:0 0 28px rgba(64,200,240,.55)}
+.wave{left:0;top:1944px;width:1440px}
+
+/* ---------- 4. A new way to DeFi ---------- */
+#newway{height:calc(1371px + 1200px);overflow:clip;background:#000}
+.nw-pin{position:sticky;top:min(0px,calc(100vh / var(--z) - 1250px));height:1371px;overflow:hidden}
+.nw-head{left:182px;top:196px;width:583px}
+.nw-head h2{margin-top:26px;width:577px}
+.nw-head p{margin-top:20px}
+.stair-line{left:-600px;top:0;width:2640px;height:700px;pointer-events:none;overflow:visible}
+.stair-line{left:0;width:1440px}
+.stairs{position:absolute;left:0;top:0;width:1440px;height:960px;will-change:transform}
+.stair-ticks{left:0;top:0;width:2600px;height:700px;pointer-events:none}
+.hcard{width:349px;height:309px;background:rgba(0,3,4,.28);border:1px solid rgba(144,181,198,.12);backdrop-filter:blur(2px);transition:border-color .3s,transform .3s}
+.hcard:hover{border-color:rgba(0,213,255,.45);transform:translateY(-4px)}
+.hcard img{position:absolute;left:23px;top:24px;width:70px;height:70px}
+.hcard h3{position:absolute;left:23px;top:176px;width:275px;font:600 20px/22px var(--display);color:var(--cyan)}
+.hcard p{position:absolute;left:23px;top:238px;width:302px;font:400 12px/1.2 var(--display);color:rgba(144,181,198,.64)}
+.landscape{left:0;top:801px;width:1440px}
+.nw-quote{left:0;right:0;top:1147px;text-align:center;font:400 22px/26px var(--display);
+  background:linear-gradient(to bottom,#29c0ea 0%,#1d98c9 45%,#0f5f8c 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nw-quote span{display:block}
+
+/* ---------- 5. The Vernal protocol ---------- */
+#features{height:2106px;background:#000}
+.vp-head{left:0;right:0;top:124px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.vp-head h2{margin-top:19px}
+.vp-head p{margin-top:20px;width:560px;font-size:14px;line-height:16px}
+.card{border-radius:6px;overflow:hidden;isolation:isolate}
+.card .bg{position:absolute;inset:0;z-index:-1}
+.card .art{position:absolute;left:0}
+.card .bg.flip{transform:scaleX(-1)}
+.card .lbl{position:absolute;font:500 10px/1 var(--ui);letter-spacing:1.5px;text-transform:uppercase;color:var(--label-dim)}
+.card .lbl.grad{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card h3{position:absolute;font:600 24px/1.09 var(--display);letter-spacing:-.72px;color:#fff}
+.card .desc{position:absolute;font:400 12px/1.25 var(--display);color:var(--body-dim)}
+
+.big{left:182px;top:374px;width:1076px;height:530px;
+  background:
+   radial-gradient(70% 120% at 100% 0%,rgba(143,240,255,.85) 0%,rgba(71,179,211,.7) 25%,rgba(0,117,166,.55) 50%,rgba(1,39,55,0) 80%),
+   linear-gradient(100deg,#03283a 0%,#05507a 30%,#0b78ad 60%,#2ea7d3 100%)}
+.big::after{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.18) .7px,transparent .9px);background-size:4px 4px;
+  -webkit-mask-image:linear-gradient(110deg,#000 0%,transparent 55%);mask-image:linear-gradient(110deg,#000 0%,transparent 55%)}
+.big .dash{position:absolute;left:412px;top:24px;width:664px}
+.big h3{left:50px;top:249px;width:380px;font-size:38px;line-height:1.02;letter-spacing:-1.1px}
+.big .desc{left:50px;top:386px;width:440px;font-size:13.5px;line-height:18px;color:rgba(255,255,255,.82)}
+.big .btn{position:absolute;left:49px;top:437px}
+
+.c-vusd{left:182px;top:916px;width:349px;height:422px}
+.c-mev{left:546px;top:916px;width:349px;height:422px;background:radial-gradient(90% 70% at 50% 100%,rgba(0,117,166,.65) 0%,rgba(1,39,55,.45) 55%,rgba(1,13,18,.3) 100%),#010a0f}
+.c-buy{left:908px;top:916px;width:350px;height:422px}
+.c-xc{left:182px;top:1349px;width:599px;height:422px}
+.c-mind{left:794px;top:1349px;width:464px;height:422px}
+.c-mind::after{content:"";position:absolute;left:30px;right:30px;top:6px;height:60px;z-index:-1;opacity:.5;
+  background-image:radial-gradient(rgba(143,240,255,.35) .8px,transparent 1px);background-size:14px 14px;
+  -webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
+
+.tip{position:absolute;display:flex;align-items:center;gap:6.6px;padding:6.6px;width:180px;height:38.4px;background:#fff;border-radius:8.85px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.tip .bar{width:3.3px;height:28.8px;border-radius:5.5px;background:
+  repeating-linear-gradient(-50deg,#f3f4f4 0 1.6px,#2071a6 1.6px 5.5px)}
+.tip small{white-space:nowrap;display:block;font:400 11px/1 var(--ui);color:#687377}
+.tip b{white-space:nowrap;display:flex;align-items:center;gap:6.6px;margin-top:6px;font:500 12.2px/1 var(--ui);color:var(--blue)}
+.tip b i{width:2.8px;height:2.8px;border-radius:50%;background:#687377}
+.tip b em{font-style:normal;color:#23abc6}
+
+/* swap widget */
+.swap{position:absolute;left:24px;top:0;width:293px;height:150px;border-radius:8px;padding:13px 21px 0;
+  background:rgba(0,32,48,.32);border-left:.65px solid rgba(243,244,244,.05);backdrop-filter:blur(3.85px)}
+.swap .row{display:flex;justify-content:space-between;align-items:center}
+.swap .tok{display:inline-flex;align-items:center;gap:3.3px;height:22px;padding:2px 5px;border-radius:3.9px;background:rgba(255,255,255,.05);font:600 9.5px/1 var(--display);color:#fff}
+.swap .tok i{width:11.8px;height:11.8px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#8ff0ff,#1d87d4 60%,#0b3c6b)}
+.swap .tok.usdc i{background:radial-gradient(circle,#fff 0 30%,#2775ca 32%)}
+.swap input{width:120px;text-align:right;background:none;border:0;outline:0;font:500 14.4px/1 var(--ui);color:#cfe3ec}
+.swap input::placeholder{color:#687377}
+.swap .meta{display:flex;justify-content:space-between;margin-top:13px;font:400 9.8px/1 var(--ui);color:rgba(104,115,119,.6)}
+.swap .meta b{font-weight:400;color:var(--blue)}
+.swap .mid{display:flex;align-items:center;gap:0;margin:6px 0}
+.swap .mid hr{flex:1;border:0;border-top:.4px solid rgba(104,115,119,.35)}
+.swap .flipbtn{width:19.6px;height:19.6px;border-radius:50%;background:rgba(104,115,119,.2);border:.5px solid #3c4142;display:grid;place-items:center;transition:transform .3s}
+.swap .flipbtn:hover{transform:rotate(180deg)}
+.swap .flipbtn svg{width:12px;height:12px}
+.swap-cta{position:absolute;left:24px;top:158px;width:293px;height:25px;border-radius:5px;background:#fff;font:400 9.2px/25px var(--ui);color:#4689b5;text-align:center;transition:background .2s,color .2s}
+.swap-cta.ready{background:var(--blue);color:#fff}
+
+/* feature list */
+.feat{left:184px;top:1808px;width:1100px;display:grid;grid-template-columns:234px 224px 226px 224px;column-gap:70px;row-gap:0}
+.feat > div{padding-top:11px}
+.feat > div:nth-child(2){margin-left:0}
+.feat img{width:19px;height:19px}
+.feat h4{margin-top:32px;font:500 16px/1.2 var(--display);letter-spacing:-.24px;color:var(--ink-100)}
+.feat p{margin-top:3.5px;font:400 12px/17px var(--display);letter-spacing:-.2px;color:var(--body-dim)}
+
+/* ---------- 6. Roadmap / Tokenomics / CTA / Footer ---------- */
+/* Roadmap: the block pins while you scroll and the phases slide left, one per scroll step */
+#roadmap{height:calc(780px + var(--rm-run,1200px));overflow:clip;background:#000}
+.rm-pin{position:sticky;top:max(0px,calc((100vh / var(--z) - 780px) / 2));height:780px;overflow:hidden}
+#tokenomics{height:2477px;background:
+  linear-gradient(to bottom,#000 0,#000 1120px,#01070b 1520px,#031823 1870px,#08405f 2240px,#0d5e86 2477px)}
+.rm-title{left:185px;top:145px;font:600 58px/1.01 var(--display);letter-spacing:-1.74px;color:var(--grey-200)}
+.ticks{left:194px;top:285px;width:1246px;height:97px;
+  background:
+   repeating-linear-gradient(to right,rgba(43,140,200,.9) 0 1.2px,transparent 1.2px 261px) left top/100% 97px no-repeat,
+   repeating-linear-gradient(to right,rgba(32,113,166,.85) 0 1.2px,transparent 1.2px 20.08px) left 12px/100% 72px no-repeat;
+  opacity:.6;-webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.5) 100%);mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.5) 100%)}
+.phases{left:193px;top:385px;height:263px;width:1247px;overflow:visible}
+.phase-track{display:flex;gap:65px;will-change:transform}
+.phase{position:relative;flex:0 0 538px;height:263px;transition:opacity .5s}
+.phase .num{position:absolute;left:380px;top:0;font:400 233px/263px var(--display);color:rgba(32,113,166,.3);pointer-events:none}
+.phase .txt{position:absolute;left:0;top:83px;width:543px}
+.phase h3{font:600 28px/27px var(--display);color:var(--ink-50)}
+.phase p{margin-top:16px;font:400 17px/1.5 var(--display);color:var(--body-dim)}
+.phase:not(.on) p{color:var(--ink-50)}
+.rm-arrows{left:193px;top:641px;display:flex;gap:15px}
+.rm-arrows button{width:42.5px;height:42.5px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 100%,#1f8fc4 0%,#0b4f78 55%,#05263a 100%);box-shadow:inset 0 0 0 1px rgba(143,240,255,.18);transition:filter .2s}
+.rm-arrows button:hover{filter:brightness(1.3)}
+.rm-arrows button:disabled{opacity:.8;cursor:default;filter:none}
+.rm-arrows svg{width:16px;height:16px}
+
+.tk-title{left:178px;top:169px;width:344px;font:500 44px/47px var(--display);letter-spacing:-1.2px;color:var(--grey-200)}
+.tk-list{left:709px;top:140px;width:538px;display:flex;flex-direction:column;gap:96px}
+.tk{position:relative;height:263px;opacity:.2;transition:opacity .5s}
+.tk.on{opacity:1}
+.tk.near{opacity:.3}
+.tk .num{position:absolute;left:380px;top:0;font:400 233px/263px var(--display);color:rgba(32,113,166,.3)}
+.tk .txt{position:absolute;left:0;top:83px;width:543px}
+.tk h3{font:600 28px/27px var(--display);color:var(--ink-50)}
+.tk p{margin-top:16px;font:400 17px/1.5 var(--display);color:var(--ink-50)}
+.tk.on p{color:var(--body-dim)}
+
+.glow{left:0;bottom:0;width:1440px;height:1519px;opacity:.4}
+.foot-art{left:0;bottom:0;width:1440px;height:761px}
+.cta{left:322px;top:1635px;width:796px;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center;z-index:2}
+.cta h2{font:600 109.5px/.86 var(--display);letter-spacing:-3.29px;color:#fff;padding:10px 0 4px}
+.cta p{width:556px;font:400 16.7px/24px var(--display);color:rgba(255,255,255,.6)}
+.f-social{left:577px;top:2358px;width:286px;height:30px;z-index:2}
+.f-social a{position:absolute;top:0;width:30px;height:30px;border-radius:6px;transition:background .2s}
+.f-social a:hover{background:rgba(255,255,255,.12)}
+.f-social img{position:absolute;left:0;top:0}
+.f-legal{left:440px;top:2414px;width:560px;display:flex;justify-content:space-between;z-index:2;font:400 13px/1 var(--ui);color:rgba(255,255,255,.9)}
+.f-legal nav{display:flex;gap:24px}
+.f-legal a:hover{text-decoration:underline}
+
+
+/* ---------- Bento animations (start when each card scrolls into view) ---------- */
+.card.rv{transform:translateY(40px) scale(.97);transition:opacity .9s ease,transform 1s cubic-bezier(.2,.7,.2,1),box-shadow .4s}
+.card.rv.in{transform:none}
+.c-vusd.rv{transition-delay:.05s}.c-mev.rv{transition-delay:.15s}.c-buy.rv{transition-delay:.25s}
+.c-xc.rv{transition-delay:.05s}.c-mind.rv{transition-delay:.18s}
+.card.in:hover{box-shadow:0 0 0 1px rgba(143,240,255,.25),0 20px 50px -20px rgba(0,174,255,.45)}
+.card .bg{transition:transform 1.2s ease,filter .4s}
+.card.in:hover .bg{filter:brightness(1.12)}
+/* entrance pieces */
+.card .an-dash{opacity:0;transform:translate(60px,30px)}
+.card.in .an-dash{opacity:1;transform:none;transition:opacity 1s .35s,transform 1.2s .35s cubic-bezier(.2,.7,.2,1)}
+.card .an-pop{opacity:0;transform:translateY(10px) scale(.9)}
+.card.in .an-pop{opacity:1;transform:none;transition:opacity .5s .9s,transform .6s .9s cubic-bezier(.3,1.4,.5,1)}
+.card .an-rise{opacity:0;transform:translateY(18px)}
+.card.in .an-rise{opacity:1;transform:none;transition:opacity .7s .5s,transform .8s .5s cubic-bezier(.2,.7,.2,1)}
+.card.in .an-rise.d2{transition-delay:.7s}
+.card .an-slide{opacity:0;transform:translateX(-24px)}
+.card.in .an-slide{opacity:1;transform:none;transition:opacity .6s .4s,transform .7s .4s cubic-bezier(.2,.7,.2,1)}
+.card.in .an-slide.d1{transition-delay:.55s}
+.card .an-draw{clip-path:inset(0 100% 0 0)}
+.card.in .an-draw{clip-path:inset(0 0 0 0);transition:clip-path .9s .8s ease}
+.card.in .an-draw.d1{transition-delay:.95s}.card.in .an-draw.d2{transition-delay:1.25s}
+.card .an-wipe{clip-path:inset(0 100% 0 0);opacity:.4}
+.card.in .an-wipe{clip-path:inset(0 0 0 0);opacity:1;transition:clip-path 1.2s 1.4s ease,opacity .4s 1.4s}
+.card .an-fadein{opacity:0;transform:scale(.92)}
+.card.in .an-fadein{opacity:1;transform:none;transition:opacity .8s .35s,transform 1s .35s cubic-bezier(.2,.7,.2,1)}
+.card .an-bloom{opacity:0;transform:scale(.5) rotate(-40deg)}
+.card.in .an-bloom{opacity:1;transform:none;transition:opacity .6s .6s,transform 1.1s .6s cubic-bezier(.3,1.3,.5,1)}
+/* idle loops once in view */
+.card.in .an-bob{animation:bob 6s ease-in-out 1.2s infinite}
+.card.in .an-bob.slow{animation-duration:8s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(-1.2deg)}}
+.card.in .an-spin{animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card.in .an-pulse{animation:pulse 3.2s ease-in-out 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.06);filter:brightness(1.25) drop-shadow(0 0 10px rgba(0,174,255,.7))}}
+.card.in .an-bloom{animation:breathe 5s ease-in-out 1.8s infinite}
+@keyframes breathe{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.06) rotate(8deg);filter:saturate(1.25)}}
+.card.in .an-pop{animation:tipfloat 4s ease-in-out 1.6s infinite}
+@keyframes tipfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.big.in .btn{animation:glow 3s ease-in-out 1.5s infinite}
+@keyframes glow{0%,100%{box-shadow:inset 0 0 4px rgba(255,255,255,.3)}50%{box-shadow:inset 0 0 4px rgba(255,255,255,.3),0 0 22px rgba(46,167,211,.55)}}
+.feat > div{opacity:0;transform:translateY(16px)}
+.feat.in > div{opacity:1;transform:none;transition:opacity .7s,transform .7s}
+.feat.in > div:nth-child(2){transition-delay:.12s}.feat.in > div:nth-child(3){transition-delay:.24s}.feat.in > div:nth-child(4){transition-delay:.36s}
+@media (prefers-reduced-motion:reduce){
+  .card *,.feat > div{animation:none!important;transition:none!important;opacity:1!important;transform:none!important;clip-path:none!important}
+}
+
+/* ---------- Reveal on scroll ---------- */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .9s ease,transform .9s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .hero-orb,.hero-orb .blob,.astro,.marquee div{animation:none}
+}
+
+/* ---------- Mobile (< 900px): reflow into a single column ---------- */
+@media (max-width:899px){
+  .page{zoom:1}
+  .socials-side,.sidenav,.nav-cta{display:none}
+  .sec{height:auto!important}
+  .stage{width:100%;left:0;margin-left:0;padding:0 22px}
+  .stage > .abs,.stage > .stairs > .abs{position:relative;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important}
+  .rv{opacity:1;transform:none}
+
+  #home{background-size:cover;padding-bottom:40px}
+  #home .stage{display:flex;flex-direction:column;align-items:center}
+  .hero-orb{zoom:min(.6,calc(100vw / 760px));margin:110px auto 110px;flex:none}
+  .hero-tag{margin-top:10px}
+  .hero-tag .tag{font-size:9px;letter-spacing:1.6px;padding:0 12px}
+  .hero-title{width:100%;height:auto;font-size:13vw;letter-spacing:-.03em;margin:18px 0 8px}
+  .hero-coin{width:72vw;margin:-10px auto 0}
+  .hero-coin.ghost,.hero-coin-sm,.hero-ribbon{display:none}
+  .marquee{margin:10px -22px 0;width:calc(100% + 44px)}
+
+  #about .stage{padding-top:60px;padding-bottom:40px}
+  .light-ray,.beam,.ring{display:none}
+  .astro{width:70vw;margin:24px auto;display:block}
+  .about-a p,.about-b{width:100%}
+  .about-a p,.about-b .lead{font-size:26px;line-height:1.25}
+  .about-b{margin-top:10px}
+  .cyl{width:100%;margin-top:30px}
+  .pen{display:none}
+
+  #scalr .stage{padding-top:70px;padding-bottom:0;display:flex;flex-direction:column}
+  .hatch{position:absolute}
+  .disc-title{width:100%;font-size:40px}
+  .cube-rail{height:auto}
+  .cube-stick{position:relative;top:0;width:64vw;height:64vw;margin:30px auto 10px}
+  .cubes,.cube-vid{width:100%;height:100%}
+  .cube-vid{left:-3.1%;top:-2.1%;width:103.6%;height:103.6%}
+  .tl-line,.tl-dot{display:none}
+  .tl-item{width:100%;margin-top:34px;padding-left:22px;border-left:1px solid rgba(143,240,255,.3)}
+  .tl-item h3{font-size:22px}
+  .tl-item p{font-size:16px}
+  .wave{width:100%;margin-top:50px}
+
+  #newway{overflow:hidden}
+  .nw-pin{position:static;height:auto}
+  #newway .stage{padding-top:60px;padding-bottom:50px}
+  .nw-head,.nw-head h2{width:100%}
+  .h-sec{font-size:38px}
+  .stair-line,.stair-ticks{display:none}
+  .stairs{position:static;height:auto;transform:none!important}
+  .stairs{display:flex;gap:14px;overflow-x:auto;margin:34px -22px 0;padding:0 22px 8px;scroll-snap-type:x mandatory}
+  .hcard{position:relative;flex:0 0 300px;scroll-snap-align:start}
+  .landscape{width:150%;margin-left:-25%;margin-top:30px}
+  .nw-quote{font-size:18px;line-height:23px;margin-top:-30px}
+  .nw-quote span{display:inline}
+
+  #features .stage{padding-top:70px;padding-bottom:60px;display:flex;flex-direction:column;gap:14px}
+  .vp-head p{width:100%}
+  .card{width:100%!important;max-width:520px;height:auto!important;margin:0 auto;display:flex;flex-direction:column;padding:26px 24px 28px}
+  .card .lbl,.card h3,.card .desc{position:static!important;width:auto!important}
+  .card h3{margin-top:14px}
+  .card .desc{margin-top:10px}
+  .card .art{position:relative!important;top:0!important;margin:18px -24px -28px;order:5}
+  .card .art.first{order:-1;margin:-26px -24px 10px}
+  .card .art.first-m{order:1;margin:14px -24px 4px}
+  .c-xc h3,.c-xc .desc{order:2}
+  .big{min-height:0}
+  .big h3{font-size:30px}
+  .big .btn{position:relative!important;left:0!important;top:0!important;margin-top:18px;align-self:flex-start}
+  .big .dash{position:relative;left:0;top:0;width:560px;max-width:none;order:6;margin:24px -24px -28px 0}
+  .feat{grid-template-columns:1fr 1fr;column-gap:20px;row-gap:26px;width:100%;margin-top:30px}
+  .feat h4{margin-top:16px}
+
+  #roadmap{overflow:hidden}
+  .rm-pin{position:static;height:auto}
+  #roadmap .stage{padding-top:70px;padding-bottom:40px}
+  .phase-track{transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+  #tokenomics .stage{padding-top:0;padding-bottom:0}
+  .ticks{width:100%;margin:30px 0 10px}
+  .phases{width:100%;height:auto;overflow:hidden}
+  .phase{flex-basis:calc(100vw - 44px);height:auto;padding-top:60px}
+  .phase .num{left:auto;right:0;font-size:150px;line-height:170px}
+  .phase .txt{position:relative;top:0;width:100%}
+  .rm-arrows{margin-top:24px}
+  .tk-title{width:100%;margin-top:90px;font-size:34px;line-height:38px}
+  .tk-list{width:100%;gap:30px;margin-top:20px}
+  .tk{height:auto;padding-top:60px}
+  .tk .num{left:auto;right:0;font-size:150px;line-height:170px}
+  .tk .txt{position:relative;top:0;width:100%}
+  .tk h3{font-size:24px}
+  .cta{width:100%;margin-top:120px}
+  .cta h2{font-size:16vw}
+  .cta p{width:100%}
+  .stage > .glow,.stage > .foot-art{position:absolute!important;left:50%!important;bottom:0!important;top:auto!important;margin-left:-720px}
+  .f-social{margin:220px auto 0}
+  .f-legal{width:100%;margin:26px 0 30px;flex-direction:column;align-items:center;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- Fixed chrome -->
+<div class="socials-side" aria-label="Social links">
+  <img src="assets/socials-side.png" width="39" height="182" alt="">
+  <a href="#" style="top:4px" aria-label="Telegram"></a>
+  <a href="#" style="top:39px" aria-label="X"></a>
+  <a href="#" style="top:74px" aria-label="Discord"></a>
+  <a href="#" style="top:109px" aria-label="Telegram channel"></a>
+  <a href="#" style="top:144px" aria-label="LinkedIn"></a>
+</div>
+
+<nav class="sidenav" aria-label="Sections">
+  <ul>
+    <li><a href="#home" data-spy="home">Home</a></li>
+    <li><a href="#about" data-spy="about">About Vernal</a></li>
+    <li><a href="#scalr" data-spy="scalr">Discover SCALR</a></li>
+    <li><a href="#newway" data-spy="newway">A New Way to DEFI</a></li>
+    <li><a href="#features" data-spy="features">Features</a></li>
+    <li><a href="#roadmap" data-spy="roadmap">Roadmap</a></li>
+  </ul>
+  <div class="scale"><div class="ind" id="ind"><b id="pct">0%</b></div></div>
+</nav>
+<a class="btn btn-sq nav-cta" id="navCta" href="#">Launch Dapp
+  <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
+
+<main class="page" id="page">
+
+<!-- 1. HERO -->
+<section class="sec" id="home">
+  <div class="stage">
+    <div class="abs hero-orb" role="img" aria-label="Vernal logo orb">
+      <img class="blob b1" src="assets/orb-blob-1.png" width="602" height="462" alt="">
+      <img class="blob b2" src="assets/orb-blob-2.png" width="602" height="479" alt="">
+      <img class="blob b3" src="assets/orb-blob-3.png" width="602" height="566" alt="">
+      <img class="logo" src="assets/orb-logo.png" width="289" height="379" alt="">
+    </div>
+    <div class="abs hero-tag rv"><div class="tag"><i></i><span>Vernl is powered by SCALR &amp; AI orchestrated RWA</span></div></div>
+    <h1 class="abs hero-title rv">A Reserve-Backed, Vote-Escrowed DeFi Protocol</h1>
+    <img class="abs hero-coin" src="assets/hero-coin.webp" width="505" height="470" alt="">
+    <img class="abs hero-coin ghost" src="assets/hero-coin.webp" width="505" height="470" alt="">
+    <img class="abs hero-coin-sm" src="assets/hero-coin-small.png" width="306" height="188" alt="">
+    <img class="abs hero-ribbon" src="assets/hero-ribbon.png" width="949" height="128" alt="">
+    <div class="abs marquee" aria-hidden="true"><div id="marq"></div></div>
+  </div>
+</section>
+
+<!-- 2. ABOUT -->
+<section class="sec" id="about">
+  <div class="stage">
+    <img class="abs light-ray" src="assets/light-ray.webp" width="865" height="621" alt="">
+    <img class="abs beam" src="assets/beam.webp" width="249" height="921" alt="">
+    <div class="abs ring r1"></div>
+    <div class="abs ring r2"></div>
+    <img class="abs astro" src="assets/astronaut.webp" width="456" height="1006" alt="Astronaut floating beside the Vernal AI badge">
+    <div class="abs about-a rv">
+      <div class="tag"><i></i><span>Welcome to Vernal Protocol</span></div>
+      <p>Vernal is a reserve-backed, AI-orchestrated, cross-chain protocol with a floor that only moves up and yield rooted in real economic activity.</p>
+    </div>
+    <img class="abs cyl" src="assets/token-cylinder.webp" width="695" height="565" alt="$VRNL token">
+    <div class="abs about-b rv">
+      <div class="tag"><i></i><span>Meet $VRNL</span></div>
+      <p class="lead">$VRNL is the most capital-efficient, risk-adjusted, future-proof asset in DeFi: a token that compounds upward and rewards loyalty across thousands of holders.</p>
+      <p class="small">Through a single integrated system called SCALR, Vernal introduces a permanently defended floor price, real yield sourced from productive assets, and governance that cannot be captured by whales or bots.</p>
+      <p class="small">To understand what sets Vernal apart, let's dive into SCALR</p>
+    </div>
+    <a class="abs pen" href="#scalr" aria-label="Dive into SCALR"><img src="assets/icon-pen.png" width="64" height="64" alt=""></a>
+  </div>
+</section>
+
+<!-- 3. DISCOVER SCALR -->
+<section class="sec" id="scalr">
+  <div class="hatch"></div>
+  <div class="stage">
+    <div class="abs disc-tag rv"><div class="tag"><i></i><span>Discover SCALR</span></div></div>
+    <h2 class="abs disc-title rv">Engineered To Precision &amp; Built for Real Governance</h2>
+    <div class="abs cube-rail"><div class="cube-stick rv" id="cubeStick">
+      <img class="cubes" id="cubeImg" src="assets/cubes.webp" width="505" height="506" alt="">
+      <video class="cube-vid" id="cubeVid" src="assets/cubes.mp4" muted playsinline preload="auto" aria-label="Cubes morphing into a ring, a hexagon and a flower"></video>
+    </div></div>
+    <div class="abs tl-line"></div>
+    <div class="abs tl-dot" style="top:565px"></div>
+    <div class="abs tl-dot" style="top:856px"></div>
+    <div class="abs tl-dot" style="top:1147px"></div>
+    <div class="abs tl-dot" style="top:1438px"></div>
+    <div class="abs tl-dot" style="top:1729px"></div>
+    <div class="abs tl-item rv" style="top:569px"><h3>Sybil-Resistant Governance</h3><p>Vernal Utilizes SCALR to Deploy advanced safeguards against fake identities, preventing manipulation in voting and ensuring decisions reflect genuine community input.</p></div>
+    <div class="abs tl-item rv" style="top:860px"><h3>Cross-chain unification</h3><p>Facilitates effortless interoperability between blockchains, overcoming silos and enabling secure, fluid asset movement without risky bridges.</p></div>
+    <div class="abs tl-item rv" style="top:1151px"><h3>AI-orchestrated reserves:</h3><p>Harnesses AI to automate reserve management, dynamically assessing risks, allocating resources, and shielding against market fluctuations.</p></div>
+    <div class="abs tl-item rv" style="top:1442px"><h3>Liquidity Position Farming:</h3><p>Empowers users to yield farm assets with full liquidity intact, unlocking higher yields through compounding without the drawbacks of locked capital.</p></div>
+    <div class="abs tl-item rv" style="top:1733px"><h3>Real-world-asset yields:</h3><p>Empowers users to yield farm assets with full liquidity intact, unlocking higher yields through compounding without the drawbacks of locked capital.</p></div>
+    <img class="abs wave" src="assets/wave.webp" width="1440" height="192" alt="">
+  </div>
+</section>
+
+<!-- 4. A NEW WAY TO DEFI -->
+<section class="sec" id="newway">
+  <div class="nw-pin" id="nwPin">
+  <div class="stage">
+    <div class="abs nw-head rv">
+      <div class="tag"><i></i><span>A new way to DeFi</span></div>
+      <h2 class="h-sec">Scalr Eradicates DeFi's Persistent Hurdles</h2>
+      <p class="p-sec">Through SCALR, Vernal confronts and resolves DeFi's most persistent hurdles in one comprehensive system, fostering a truly resilient and inclusive environment:</p>
+    </div>
+    <svg class="abs stair-line" viewBox="0 0 1440 700" fill="none" stroke="rgba(160,190,205,.55)" stroke-width="1" stroke-dasharray="5 5" aria-hidden="true">
+      <path d="M-600 785 L2040 138"/>
+    </svg>
+    <div class="stairs" id="stairs">
+      <svg class="abs stair-ticks" viewBox="0 0 2600 700" fill="none" stroke="rgba(160,190,205,.55)" stroke-width="1" stroke-dasharray="5 5" aria-hidden="true">
+        <path d="M198 590 V650"/><path d="M600 491 V550"/><path d="M1001 393 V450"/><path d="M1403 294 V350"/><path d="M1804 196 V250"/><path d="M2206 97 V150"/>
+      </svg>
+      <article class="abs hcard" style="left:181px;top:650px"><img src="assets/icon-scalr-1.png" alt=""><h3>Sybil attacks and corrupted governance</h3><p>AI-orchestrated reserves paired with LP yields creates an ever-strengthening value floor, protecting against drops while maintaining full decentralization.</p></article>
+      <article class="abs hcard" style="left:583px;top:550px"><img src="assets/icon-scalr-2.png" alt=""><h3>Real yield that beats inflation and risk-free rates</h3><p>By tapping into diversified real-world-asset yields, Vernal generates sustainable returns that outpace benchmarks, free from volatile speculation.</p></article>
+      <article class="abs hcard" style="left:984px;top:450px"><img src="assets/icon-scalr-3.png" alt=""><h3>Whale domination and mercenary capital</h3><p>Sybil-resistant governance and balanced incentives curb undue influence from big players or transient investors, promoting equitable distribution to committed holders.</p></article>
+      <article class="abs hcard" style="left:1386px;top:350px"><img src="assets/icon-scalr-2.png" alt=""><h3>Chain fragmentation and bridge vulnerabilities</h3><p>Cross-chain unification integrates networks holistically, eliminating bridge-related risks for safer, more streamlined operations.</p></article>
+      <article class="abs hcard" style="left:1787px;top:250px"><img src="assets/icon-scalr-3.png" alt=""><h3>MEV extraction and sandwich attacks</h3><p>Embedded AI and governance protections actively mitigate exploitative trading tactics like front-running, enhancing overall fairness.</p></article>
+      <article class="abs hcard" style="left:2189px;top:150px"><img src="assets/icon-scalr-1.png" alt=""><h3>Sybil attacks and corrupted governance</h3><p>The framework's core resistance to identity fraud ensures transparent, incorruptible decision-making that can't be swayed by bribes or bots.</p></article>
+    </div>
+    <img class="abs landscape" src="assets/landscape.webp" width="1440" height="345" alt="">
+    <p class="abs nw-quote rv"><span>This all-encompassing strategy means Vernal doesn't</span> <span>just patch problems, it eradicates them, paving the</span> <span>way for a DeFi future without compromises.</span></p>
+  </div>
+  </div>
+</section>
+
+<!-- 5. THE VERNAL PROTOCOL -->
+<section class="sec" id="features">
+  <div class="hatch"></div>
+  <div class="stage">
+    <div class="abs vp-head rv">
+      <div class="tag"><i></i><span>Core Features</span></div>
+      <h2 class="h-sec">The Vernal protocol</h2>
+      <p class="p-sec">A unified interface for monitoring protocol health, participating in governance, deploying capital, and earning yield across the Vernal ecosystem.</p>
+    </div>
+
+    <article class="abs card big rv">
+      <span class="lbl" style="left:50px;top:51px">Deflationary Mechanics</span>
+      <img class="dash an-dash" src="assets/dashboard.webp" width="664" height="507" alt="Vernal dApp dashboard">
+      <h3>Battle-Tested &amp; Scalable Protocol for Decentralized Finance</h3>
+      <p class="desc">A hardcoded reserve-backed floor that triggers instant $VRNL burns on every sell, mathematically enforcing an "up-only" price trajectory.</p>
+      <a class="btn btn-sq" href="#">Launch Dapp <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
+    </article>
+
+    <article class="abs card c-vusd rv">
+      <div class="bg flip" style="background:url(&quot;data:image/svg+xml;utf8,<svg viewBox='0 0 350 422' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(%23g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-4.22 -54.581 48.669 -3.7629 217.2 8.6261)'><stop stop-color='rgba(1,13,18,0.31)' offset='0.35363'/><stop stop-color='rgba(1,39,55,0.4825)' offset='0.42236'/><stop stop-color='rgba(1,65,92,0.655)' offset='0.49109'/><stop stop-color='rgba(0,91,129,0.8275)' offset='0.55982'/><stop stop-color='rgba(0,117,166,1)' offset='0.62855'/><stop stop-color='rgba(18,132,177,1)' offset='0.67498'/><stop stop-color='rgba(36,148,188,1)' offset='0.72141'/><stop stop-color='rgba(71,179,211,1)' offset='0.81428'/><stop stop-color='rgba(107,209,233,1)' offset='0.90714'/><stop stop-color='rgba(143,240,255,1)' offset='1'/></radialGradient></defs></svg>&quot;) center/100% 100%"></div>
+      <span class="lbl" style="left:26px;top:27px">Deflationary Mechanics</span>
+      <h3 style="left:27px;top:65px;width:276px">vUSD: A Deeply Backed, Yield-Bearing Stablecoin</h3>
+      <p class="desc" style="left:27px;top:131px;width:276px">A hardcoded reserve-backed floor that triggers instant $VRNL burns on every sell, mathematically enforcing an "up-only" price trajectory.</p>
+      <div class="art" data-w="350" style="top:152px;width:350px;height:270px">
+      <img class="abs an-bob" src="assets/vusd-coins.png" width="321" height="271" style="left:0;top:0" alt="">
+      <img class="abs" src="assets/vusd-ribbon.png" width="326" height="66" style="left:25px;top:205px" alt="">
+      <div class="tip an-pop" style="left:80px;top:205px"><span class="bar"></span><div><small>Dec 23, 7:17 AM</small><b>4.527 USDC <i></i> <em>4.527 USDC</em></b></div></div>
+      </div>
+    </article>
+
+    <article class="abs card c-mev rv">
+      <div class="art first" data-w="349" style="top:0;width:349px;height:269px"><img class="abs an-bob slow" src="assets/mev-shield.png" width="339" height="269" style="left:0;top:0" alt="MEV-resistant shield"></div>
+      <span class="lbl" style="left:23px;top:273px">Deflationary Mechanics</span>
+      <h3 style="left:23px;top:294px;width:240px">MEV-Resistant Periodic Auctions</h3>
+      <p class="desc" style="left:23px;top:357px;width:301px">All Trades clear every 12 seconds, preventing MEV. Fees go to reserves for buyback or veVRNL rewards, with priority for veVRNL holders.</p>
+    </article>
+
+    <article class="abs card c-buy rv">
+      <div class="bg flip" style="background:url(&quot;data:image/svg+xml;utf8,<svg viewBox='0 0 350 422' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(%23g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(11.706 -55.429 49.425 10.438 57.94 17.107)'><stop stop-color='rgba(1,13,18,0.31)' offset='0.35363'/><stop stop-color='rgba(1,39,55,0.4825)' offset='0.42236'/><stop stop-color='rgba(1,65,92,0.655)' offset='0.49109'/><stop stop-color='rgba(0,91,129,0.8275)' offset='0.55982'/><stop stop-color='rgba(0,117,166,1)' offset='0.62855'/><stop stop-color='rgba(18,132,177,1)' offset='0.67498'/><stop stop-color='rgba(36,148,188,1)' offset='0.72141'/><stop stop-color='rgba(71,179,211,1)' offset='0.81428'/><stop stop-color='rgba(107,209,233,1)' offset='0.90714'/><stop stop-color='rgba(143,240,255,1)' offset='1'/></radialGradient></defs></svg>&quot;) center/100% 100%"></div>
+      <span class="lbl" style="left:24px;top:28px">Interliquid Architecture</span>
+      <h3 style="left:24px;top:64px;font-weight:500;font-size:20.2px;letter-spacing:-.6px">Buy and Sell $VRNL</h3>
+      <p class="desc" style="left:24px;top:96px;width:276px">A hardcoded reserve-backed floor that triggers instant $VRNL burns on every sell, mathematically enforcing an "up-only" price trajectory.</p>
+      <div class="art" data-w="350" style="top:220px;width:350px;height:185px">
+      <form class="swap an-rise" id="swap" autocomplete="off">
+        <div class="row"><span class="tok" id="tokA"><i></i>VRNL</span><input id="amtA" inputmode="decimal" placeholder="0.00" aria-label="Pay amount"></div>
+        <div class="meta"><span>Balance <b id="balA">0 VRNL</b></span><span id="usdA">≈ $0.00</span></div>
+        <div class="mid"><hr><button type="button" class="flipbtn" id="flip" aria-label="Switch tokens"><svg viewBox="0 0 12 12" fill="none" stroke="#cfd6d8" stroke-width="1"><path d="M3.5 10V2M1.5 4l2-2 2 2M8.5 2v8M6.5 8l2 2 2-2"/></svg></button><hr></div>
+        <div class="row"><span class="tok usdc" id="tokB"><i></i>USDC <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#9aa6aa"><path d="M2 3.5 4.5 6 7 3.5"/></svg></span><input id="amtB" placeholder="0.00" readonly aria-label="Receive amount"></div>
+        <div class="meta"><span>Balance <b id="balB" style="color:#687377">0 USDC</b></span><span></span></div>
+      </form>
+      <button class="swap-cta an-rise d2" id="swapCta" type="button">Enter an Amount</button>
+      </div>
+    </article>
+
+    <article class="abs card c-xc rv">
+      <div class="bg flip" style="background:url(&quot;data:image/svg+xml;utf8,<svg viewBox='0 0 599 422' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(%23g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(10.086 -61.2 93.393 15.392 198.64 74.812)'><stop stop-color='rgba(1,13,18,0.31)' offset='0.35363'/><stop stop-color='rgba(1,39,55,0.4825)' offset='0.42236'/><stop stop-color='rgba(1,65,92,0.655)' offset='0.49109'/><stop stop-color='rgba(0,91,129,0.8275)' offset='0.55982'/><stop stop-color='rgba(0,117,166,1)' offset='0.62855'/><stop stop-color='rgba(18,132,177,1)' offset='0.67498'/><stop stop-color='rgba(36,148,188,1)' offset='0.72141'/><stop stop-color='rgba(71,179,211,1)' offset='0.81428'/><stop stop-color='rgba(107,209,233,1)' offset='0.90714'/><stop stop-color='rgba(143,240,255,1)' offset='1'/></radialGradient></defs></svg>&quot;) center/100% 100%"></div>
+      <span class="lbl grad" style="left:45px;top:28px">Deflationary Mechanics</span>
+      <div class="art first-m" data-w="599" style="top:95px;width:599px;height:150px">
+      <div class="abs" style="left:245px;top:23px;width:110px;height:111px;border-radius:66px;background:#00aeff;filter:blur(38px);opacity:.9"></div>
+      <img class="abs an-slide" src="assets/chip-hyperlane.png" width="128" height="42" style="left:43.6px;top:24px" alt="Hyperlane">
+      <img class="abs an-slide d1" src="assets/chip-layerzero.png" width="128" height="42" style="left:43.6px;top:91px" alt="LayerZero">
+      <img class="abs an-draw" src="assets/line-a.png" width="108" height="35" style="left:171px;top:42.5px" alt="">
+      <img class="abs an-draw d1" src="assets/line-c.png" width="108" height="35" style="left:171px;top:78.5px" alt="">
+      <img class="abs an-draw d2" src="assets/line-b.png" width="112" height="29" style="left:315.6px;top:63.3px" alt="">
+      <img class="abs an-spin" src="assets/ring-ticks.png" width="138" height="138" style="left:230.8px;top:9.9px" alt="">
+      <img class="abs an-pulse" src="assets/mini-orb.png" width="112" height="112" style="left:243.5px;top:22.9px" alt="">
+      <img class="abs an-wipe" src="assets/vevrnl-chart.png" width="116" height="87" style="left:426px;top:34.7px" alt="veVRNL chart">
+      </div>
+      <h3 style="left:30px;top:309px;line-height:1.01">Cross-Chain Unified Floor</h3>
+      <p class="desc" style="left:27px;top:347px;width:374px">A single global VRNL floor and burn engine live natively across Ethereum, Arbitrum, Base, Solana, and Sui; One price, one reserve, zero bridge risk, fully omni-chain from day one.</p>
+    </article>
+
+    <article class="abs card c-mind rv">
+      <div class="bg" style="background:radial-gradient(120% 75% at 40% 108%,rgba(0,117,166,.95) 0%,rgba(0,91,129,.75) 22%,rgba(1,65,92,.55) 42%,rgba(1,39,55,.4) 62%,rgba(1,13,18,.3) 85%),#01080c"></div>
+      <div class="art first" data-w="464" style="top:0;width:464px;height:250px">
+      <img class="abs an-fadein" src="assets/ai-models.png" width="440" height="240" style="left:12px;top:5px" alt="AI model logos">
+      <img class="abs an-bloom" src="assets/ai-flower.png" width="166" height="167" style="left:149px;top:40px" alt="Vernal Mind">
+      </div>
+      <h3 style="left:34px;top:288px;width:300px">Vernal Mind: On-Chain AI Reserve Agent</h3>
+      <p class="desc" style="left:34px;top:352px;width:366px">An autonomous on-chain AI reallocates VRNL reserves into top DeFi &amp; RWA strategies in real time; veVRNL holders set the risk rules, resulting in transparently verifiable, superior risk-adjusted yield.</p>
+    </article>
+
+    <div class="abs feat rv">
+      <div><img src="assets/icon-feat-1.png" alt=""><h4>Minting</h4><p>Minting fees and stability fees flow directly into reserves → more buy-pressure and burns</p></div>
+      <div><img src="assets/icon-feat-2.png" alt=""><h4>Protocol&nbsp; Real yield</h4><p>vUSD itself earns a portion of the protocol’s real yield, making it one of the highest-yielding “stable” assets in DeFi</p></div>
+      <div><img src="assets/icon-feat-3.png" alt=""><h4>Multi-Chain</h4><p>Fully native on every supported chain from day one, no wraps or bridges needed</p></div>
+      <div><img src="assets/icon-feat-4.png" alt=""><h4>Redemption</h4><p>Redemption is always backed by the unbreakable floor mechanism and AI-managed liquidity buffer</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ROADMAP · TOKENOMICS · CTA · FOOTER -->
+<section class="sec" id="roadmap">
+  <div class="hatch"></div>
+  <div class="rm-pin">
+  <div class="stage">
+    <h2 class="abs rm-title rv">Roadmap</h2>
+    <div class="abs ticks" aria-hidden="true"></div>
+    <div class="abs phases" id="phases">
+      <div class="phase-track" id="track">
+        <div class="phase on"><span class="num">1</span><div class="txt"><h3>Phase 1 - (Feb 2026)</h3><p>Launch of the defended floor, Zap Bonds with RWA collateral, and a unified cross-chain reserve system establishing one global price.</p></div></div>
+        <div class="phase"><span class="num">2</span><div class="txt"><h3>Phase 2 (Mar 2026)</h3><p>Introduction of veVRNL and Power 2.0 alongside the on-chain AI reserve agent to optimize yield while enforcing long-term alignment.</p></div></div>
+        <div class="phase"><span class="num">3</span><div class="txt"><h3>Phase 3 (Apr 2026)</h3><p>DAO handover, MEV-resistant auctions, decentralized identity integration, and launch of vUSD as a deeply backed stablecoin.</p></div></div>
+      </div>
+    </div>
+    <div class="abs rm-arrows">
+      <button id="prev" aria-label="Previous phase"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg></button>
+      <button id="next" aria-label="Next phase"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6"><path d="m6 3 5 5-5 5"/></svg></button>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="sec" id="tokenomics">
+  <div class="stage">
+    <img class="abs glow" src="assets/footer-glow.webp" alt="">
+    <img class="abs foot-art" src="assets/footer-art.webp" width="1440" height="761" alt="">
+
+    <h2 class="abs tk-title rv">Tokenomics &amp; Launch Timeline (Q1 2026)</h2>
+    <div class="abs tk-list" id="tk">
+      <div class="tk on"><span class="num">1</span><div class="txt"><h3>$100M Total Supply</h3><p>Launch of the defended floor, Zap Bonds with RWA collateral, and a unified cross-chain reserve system establishing one global price.</p></div></div>
+      <div class="tk near"><span class="num">2</span><div class="txt"><h3>Revenue streams:</h3><p>sell-tax into floor, auction fees, 25% protocol fee on all yield (50/50 buyback-burn/distribute to veVRNL), small bond convenience fees</p></div></div>
+      <div class="tk"><span class="num">3</span><div class="txt"><h3>Fair launch:</h3><p>DAO handover, MEV-resistant auctions, decentralized identity integration, and launch of vUSD as a deeply backed stablecoin.</p></div></div>
+      <div class="tk"><span class="num">3</span><div class="txt"><h3>100% locked</h3><p>DAO handover, MEV-resistant auctions, decentralized identity integration, and launch of vUSD as a deeply backed stablecoin.</p></div></div>
+    </div>
+
+    <div class="abs cta rv">
+      <h2>Vernal is Defi’s Final Form</h2>
+      <p>The First intelligent, multi-chain, RWA-backed, AI-optimized, scalable reserve currency, compounds intelligently, and rewards alignment by design.</p>
+      <a class="btn btn-pill" href="#">Launch App <svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="1.8"><path d="M1.5 10.5 10.5 1.5M3 1.5h7.5V9"/></svg></a>
+    </div>
+
+    <div class="abs f-social">
+      <img src="assets/socials-footer.png" width="286" height="30" alt="">
+      <a href="#" style="left:-2px" aria-label="X"></a>
+      <a href="#" style="left:64px" aria-label="Telegram"></a>
+      <a href="#" style="left:130px" aria-label="YouTube"></a>
+      <a href="#" style="left:196px" aria-label="Discord"></a>
+      <a href="#" style="left:258px" aria-label="LinkedIn"></a>
+    </div>
+    <footer class="abs f-legal"><span>© 2026 Vernal. All rights reserved.</span><nav><a href="#">Legal</a><a href="#">Privacy Policy</a></nav></footer>
+  </div>
+</section>
+</main>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const isMobile=()=>innerWidth<900;
+  function fit(){
+    root.style.setProperty('--z', isMobile()?1:Math.min(1, innerWidth/1440));
+    document.querySelectorAll('.card .art').forEach(a=>{
+      if(!isMobile()){a.style.zoom='';return}
+      const w=a.closest('.card').clientWidth; a.style.zoom=Math.min(1.3, w/(+a.dataset.w));
+    });
+  }
+  fit(); addEventListener('resize',fit);
+
+  // marquee
+  const m=document.getElementById('marq');
+  m.textContent=('VIRNAL PROTOCOL IS BUILT FOR DEFI  ').repeat(16);
+
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+  // scroll spy + progress + nav CTA
+  const ids=['home','about','scalr','newway','features','roadmap'];
+  const links=[...document.querySelectorAll('[data-spy]')];
+  const ind=document.getElementById('ind'), pct=document.getElementById('pct'), cta=document.getElementById('navCta');
+  const dots=[...document.querySelectorAll('.tl-dot')], items=[...document.querySelectorAll('.tl-item')];
+  const tks=[...document.querySelectorAll('.tk')];
+  function onScroll(){
+    const y=scrollY, max=document.documentElement.scrollHeight-innerHeight;
+    const p=max>0?y/max:0;
+    ind.style.top=(p*286)+'px'; pct.textContent=Math.round(p*100)+'%';
+    cta.classList.toggle('show', y>innerHeight*.9);
+    let cur='home';
+    ids.forEach(id=>{const r=document.getElementById(id).getBoundingClientRect(); if(r.top<innerHeight*.4) cur=id;});
+    links.forEach(a=>a.classList.toggle('on',a.dataset.spy===cur));
+    // timeline + tokenomics focus
+    const mid=innerHeight*.5;
+    let best=-1,bd=1e9; items.forEach((it,i)=>{const r=it.getBoundingClientRect(); const d=Math.abs(r.top+r.height/2-mid); if(d<bd){bd=d;best=i}});
+    dots.forEach((d,i)=>d.classList.toggle('on',i===best));
+    let tb=0,td=1e9; tks.forEach((t,i)=>{const r=t.querySelector('.txt').getBoundingClientRect(); const d=Math.abs(r.top+r.height/2-mid); if(d<td){td=d;tb=i}});
+    tks.forEach((t,i)=>{t.classList.toggle('on',i===tb); t.classList.toggle('near',Math.abs(i-tb)===1)});
+  }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // roadmap: vertical scroll drives the phases sideways while the block is pinned
+  const phases=[...document.querySelectorAll('.phase')], track=document.getElementById('track');
+  const prev=document.getElementById('prev'), next=document.getElementById('next');
+  const rm=document.getElementById('roadmap'), n=phases.length, STEP=603, RUN=600*(n-1);
+  root.style.setProperty('--rm-run', RUN+'px');
+  let idx=0, mIdx=0;
+  const zf=()=>parseFloat(getComputedStyle(root).getPropertyValue('--z'))||1;
+  function paint(pos){ // pos: 0..n-1, fractional while scrolling
+    const step=isMobile()? (phases[0].offsetWidth+65) : STEP;
+    track.style.transform='translateX('+(-pos*step)+'px)';
+    idx=Math.round(pos);
+    phases.forEach((p,i)=>{const d=Math.abs(i-pos); p.classList.toggle('on',i===idx); p.style.opacity=Math.max(.2,1-d*.7).toFixed(2)});
+    prev.disabled=idx===0; next.disabled=idx===n-1;
+  }
+  function rmScroll(){
+    if(isMobile()){paint(mIdx);return}
+    const z=zf(), r=rm.getBoundingClientRect();
+    const run=RUN*z; // runway in screen px
+    const p=Math.min(1,Math.max(0,-r.top/run));
+    paint(p*(n-1));
+  }
+  function go(i){
+    i=Math.max(0,Math.min(n-1,i));
+    if(isMobile()){mIdx=i;paint(i);return}
+    const z=zf(), top=rm.getBoundingClientRect().top+scrollY;
+    scrollTo({top: top + (i/(n-1))*RUN*z + 1, behavior:'smooth'});
+  }
+  prev.onclick=()=>go(idx-1);
+  next.onclick=()=>go(idx+1);
+  // SCALR hurdles: cards travel along the dashed diagonal, top-right to bottom-left, as you scroll
+  const nw=document.getElementById('newway'), stairs=document.getElementById('stairs');
+  function stairScroll(){
+    if(isMobile()){stairs.style.transform='';return}
+    const z=zf(), r=nw.getBoundingClientRect();
+    const stick=parseFloat(getComputedStyle(document.getElementById('nwPin')).top)*z; // where the pin locks
+    const p=Math.min(1,Math.max(0,(stick - r.top)/(1200*z)));
+    const t=p*3; // three card-steps: card 6 ends where card 3 started
+    stairs.style.transform='translate('+(-t*401.5)+'px,'+(t*99)+'px)';
+  }
+  addEventListener('scroll',stairScroll,{passive:true}); addEventListener('resize',stairScroll); stairScroll();
+  // SCALR cubes: stay beside the timeline; each step morphs the shape.
+  // If assets/cubes.mp4 is present, the video is scrubbed by scroll instead.
+  const cubeStick=document.getElementById('cubeStick'), cubeImg=document.getElementById('cubeImg'), cubeVid=document.getElementById('cubeVid');
+  const shapes=[
+    'rotate(0deg) scale(1)',
+    'rotate(90deg) scale(.92)',
+    'rotate(180deg) scale(1.04) skewX(-4deg)',
+    'rotate(270deg) scale(.9)',
+    'rotate(360deg) scale(1.06)'];
+  const hues=[0,-12,14,-20,8];
+  const VSTART=0.1; // video begins at 0.1s, never at 0
+  let vidOk=false, vidTarget=VSTART, vidCur=VSTART, vidRaf=0;
+  function vidStep(){
+    vidCur+= (vidTarget-vidCur)*.18;
+    if(Math.abs(vidTarget-vidCur)<.01) vidCur=vidTarget;
+    if(!cubeVid.seeking) cubeVid.currentTime=vidCur;
+    vidRaf = vidCur===vidTarget ? 0 : requestAnimationFrame(vidStep);
+  }
+  cubeVid.addEventListener('loadedmetadata',()=>{if(cubeVid.duration>0){vidOk=true;cubeVid.currentTime=VSTART;cubeStick.classList.add('has-video');cubeScroll()}});
+  cubeVid.addEventListener('error',()=>cubeVid.remove());
+  function cubeScroll(){
+    const its=[...document.querySelectorAll('.tl-item')], mid=innerHeight*.5;
+    const c=its.map(it=>{const r=it.getBoundingClientRect();return r.top+r.height/2});
+    // continuous position along the five steps
+    let pos=0;
+    if(mid<=c[0]) pos=0; else if(mid>=c[c.length-1]) pos=c.length-1;
+    else for(let i=0;i<c.length-1;i++) if(mid>=c[i]&&mid<c[i+1]){pos=i+(mid-c[i])/(c[i+1]-c[i]);break}
+    if(vidOk){
+      // down: plays forward from 0.1s to the end; up: plays backward from the end to 0.1s
+      const end=cubeVid.duration-0.04;
+      vidTarget=VSTART+(end-VSTART)*pos/(c.length-1);
+      if(!vidRaf) vidRaf=requestAnimationFrame(vidStep); return }
+    const k=Math.round(pos);
+    cubeImg.style.transform=shapes[k]; cubeImg.style.filter='hue-rotate('+hues[k]+'deg)';
+  }
+  addEventListener('scroll',cubeScroll,{passive:true}); cubeScroll();
+  addEventListener('scroll',rmScroll,{passive:true}); addEventListener('resize',rmScroll); rmScroll();
+
+  // swap widget
+  const PRICE=4.527;
+  const amtA=document.getElementById('amtA'), amtB=document.getElementById('amtB'), usdA=document.getElementById('usdA');
+  const tokA=document.getElementById('tokA'), tokB=document.getElementById('tokB'), btn=document.getElementById('swapCta');
+  let sellingVRNL=true;
+  function calc(){
+    const v=parseFloat(amtA.value.replace(/[^0-9.]/g,''));
+    if(!v){amtB.value='';usdA.textContent='≈ $0.00';btn.textContent='Enter an Amount';btn.classList.remove('ready');return}
+    const out=sellingVRNL? v*PRICE : v/PRICE;
+    const usd=sellingVRNL? v*4.53 : v;
+    amtB.value=out.toLocaleString(undefined,{maximumFractionDigits:4});
+    usdA.textContent='≈ $'+usd.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    btn.textContent=sellingVRNL?'Sell VRNL':'Buy VRNL'; btn.classList.add('ready');
+  }
+  amtA.addEventListener('input',calc);
+  document.getElementById('swap').addEventListener('submit',e=>e.preventDefault());
+  document.getElementById('flip').onclick=()=>{
+    sellingVRNL=!sellingVRNL;
+    const a=tokA.innerHTML; tokA.innerHTML=tokB.innerHTML; tokB.innerHTML=a;
+    tokA.classList.toggle('usdc'); tokB.classList.toggle('usdc');
+    document.getElementById('balA').textContent=sellingVRNL?'0 VRNL':'0 USDC';
+    document.getElementById('balB').textContent=sellingVRNL?'0 USDC':'0 VRNL';
+    calc();
+  };
+})();
+</script>
+</body>
+</html>
