@@ -164,8 +164,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .wave{left:0;top:1944px;width:1440px}
 
 /* ---------- 4. A new way to DeFi ---------- */
-#newway{height:calc(1371px + 1200px);overflow:clip;background:#000}
-.nw-pin{position:sticky;top:min(0px,calc(100vh / var(--z) - 1250px));height:1371px;overflow:hidden}
+/* wider than 1440: this section scales up so the diagonal and landscape reach both edges */
+#newway{height:calc(1371px + 1200px);overflow:clip;background:#000;zoom:var(--zw,1)}
+.nw-pin{position:sticky;top:var(--nw-top,0px);height:1371px;overflow:hidden}
 .nw-head{left:182px;top:196px;width:583px}
 .nw-head h2{margin-top:26px;width:577px}
 .nw-head p{margin-top:20px}
@@ -403,7 +404,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .tl-item p{font-size:16px}
   .wave{width:100%;margin-top:50px}
 
-  #newway{overflow:hidden}
+  #newway{overflow:hidden;zoom:1}
   .nw-pin{position:static;height:auto}
   #newway .stage{padding-top:60px;padding-bottom:50px}
   .nw-head,.nw-head h2{width:100%}
@@ -803,10 +804,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   next.onclick=()=>go(idx+1);
   // SCALR hurdles: cards travel along the dashed diagonal, top-right to bottom-left, as you scroll
   const nw=document.getElementById('newway'), stairs=document.getElementById('stairs');
+  function nwZoom(){ return isMobile()?1:Math.max(1, innerWidth/1440) }
+  function setNwZoom(){ root.style.setProperty('--zw', nwZoom()) }
+  setNwZoom(); addEventListener('resize',setNwZoom);
   function stairScroll(){
     if(isMobile()){stairs.style.transform='';return}
-    const z=zf(), r=nw.getBoundingClientRect();
-    const stick=parseFloat(getComputedStyle(document.getElementById('nwPin')).top)*z; // where the pin locks
+    const z=zf()*nwZoom(), r=nw.getBoundingClientRect();
+    const top=Math.min(0, innerHeight/z - 1250);      // design px where the pin locks
+    root.style.setProperty('--nw-top', top+'px');
+    const stick=top*z;                                 // same, in screen px
     const p=Math.min(1,Math.max(0,(stick - r.top)/(1200*z)));
     const t=p*3; // three card-steps: card 6 ends where card 3 started
     stairs.style.transform='translate('+(-t*401.5)+'px,'+(t*99)+'px)';
