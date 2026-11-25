@@ -64,10 +64,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   box-shadow:inset 0 0 4px rgba(255,255,255,.3);transition:filter .2s,transform .2s}
 .btn:hover{filter:brightness(1.15)}
 .btn:active{transform:translateY(1px)}
-.btn svg{width:11px;height:11px}
-.btn-sq{border-radius:4px;padding:9px 23px;font:500 15px/22.5px var(--ui)}
-.btn-pill{border-radius:100px;padding:12px 24px;font:600 17.3px/27px var(--ui);gap:8px}
-.btn-pill svg{width:12px;height:12px}
+/* one button style everywhere: same height, padding, type and fully rounded corners */
+.btn{height:46px;padding:0 24px;border-radius:100px;gap:8px;font:600 15px/1 var(--ui)}
+.btn svg{width:11px;height:11px;flex:none}
 
 /* ---------- Fixed chrome ---------- */
 .socials-side{position:fixed;left:30px;top:295px;z-index:40;width:39px;height:182px;border-radius:3px;
@@ -244,7 +243,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .swap .flipbtn{width:19.6px;height:19.6px;border-radius:50%;background:rgba(104,115,119,.2);border:.5px solid #3c4142;display:grid;place-items:center;transition:transform .3s}
 .swap .flipbtn:hover{transform:rotate(180deg)}
 .swap .flipbtn svg{width:12px;height:12px}
-.swap-cta{position:absolute;left:24px;top:158px;width:293px;height:25px;border-radius:5px;background:#fff;font:400 9.2px/25px var(--ui);color:#4689b5;text-align:center;transition:background .2s,color .2s}
+.swap-cta{position:absolute;left:24px;top:158px;width:293px;height:25px;border-radius:100px;background:#fff;font:400 9.2px/25px var(--ui);color:#4689b5;text-align:center;transition:background .2s,color .2s}
 .swap-cta.ready{background:var(--blue);color:#fff}
 
 /* feature list */
@@ -491,7 +490,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   </ul>
   <div class="scale"><div class="ind" id="ind"><b id="pct">0%</b></div></div>
 </nav>
-<a class="btn btn-sq nav-cta" id="navCta" href="#">Launch Dapp
+<a class="btn nav-cta" id="navCta" href="#">Launch Dapp
   <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
 
 <main class="page" id="page">
@@ -606,7 +605,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <img class="dash an-dash" src="assets/dashboard.webp" width="664" height="507" alt="Vernal dApp dashboard">
       <h3>Battle-Tested &amp; Scalable Protocol for Decentralized Finance</h3>
       <p class="desc">A hardcoded reserve-backed floor that triggers instant $VRNL burns on every sell, mathematically enforcing an "up-only" price trajectory.</p>
-      <a class="btn btn-sq" href="#">Launch Dapp <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
+      <a class="btn" href="#">Launch Dapp <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
     </article>
 
     <article class="abs card c-vusd rv">
@@ -724,7 +723,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="abs cta rv">
       <h2>Vernal is Defi’s Final Form</h2>
       <p>The First intelligent, multi-chain, RWA-backed, AI-optimized, scalable reserve currency, compounds intelligently, and rewards alignment by design.</p>
-      <a class="btn btn-pill" href="#">Launch App <svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="1.8"><path d="M1.5 10.5 10.5 1.5M3 1.5h7.5V9"/></svg></a>
+      <a class="btn" href="#">Launch App <svg viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.6"><path d="M1.5 9.5 9.5 1.5M3 1.5h6.5V8"/></svg></a>
     </div>
 
     <div class="abs f-social">
